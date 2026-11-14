@@ -127,7 +127,7 @@ const T={
   upTo:"fino a {n} ospiti",from:"da {p} €/notte",
   pick:"Seleziona le date di arrivo e partenza nel calendario.",
   nights:"{n} notti",night:"{n} notte",nightsAt:"{n} × {p} € (stagione {s})",cleaning:"Pulizie finali",total:"Totale indicativo",tax:"Tassa di soggiorno ({g} × {n} notti × {p} €)",
-  ci:"Check-in",co:"Check-out",hours:"Orari",guestsW:"ospiti",
+  ci:"Check-in",co:"Check-out",hours:"Orari",guestsW:"ospiti",fromTo:"dalle {a} alle {b}",
   seasons:{B:"bassa",M:"media",A:"alta"},
   minErr:"Per queste date il soggiorno minimo è di {n} notti.",busyErr:"Alcune notti scelte non sono disponibili.",
   guestsErr:"L'appartamento ospita al massimo {n} persone.",
@@ -142,7 +142,7 @@ const T={
   upTo:"up to {n} guests",from:"from €{p}/night",
   pick:"Select your arrival and departure dates on the calendar.",
   nights:"{n} nights",night:"{n} night",nightsAt:"{n} × €{p} ({s} season)",cleaning:"Final cleaning",total:"Indicative total",tax:"Tourist tax ({g} × {n} nights × €{p})",
-  ci:"Check-in",co:"Check-out",hours:"Times",guestsW:"guests",
+  ci:"Check-in",co:"Check-out",hours:"Times",guestsW:"guests",fromTo:"{a}–{b}",
   seasons:{B:"low",M:"mid",A:"high"},
   minErr:"For these dates the minimum stay is {n} nights.",busyErr:"Some of the selected nights are not available.",
   guestsErr:"This apartment sleeps up to {n} guests.",
@@ -239,6 +239,7 @@ function pick(i){
   else{ if(!allFree(sIn,i)){ if(free(i)){sIn=i;sOut=null;} } else sOut=i; }
   renderCal();renderSummary();
 }
+const span=h=>h.length>1?fmt(T[L].fromTo,{a:h[0],b:h[1]}):h[0];
 function renderSummary(){
   const t=T[L],box=$("summary"),g=+$("guests").value;
   if(sIn===null||sOut===null){box.innerHTML='<span class="msg">'+t.pick+'</span>';return;}
@@ -252,7 +253,7 @@ function renderSummary(){
   let err="";
   if(!allFree(sIn,sOut))err=t.busyErr;else if(n<mn)err=fmt(t.minErr,{n:mn});else if(g>apt.guests)err=fmt(t.guestsErr,{n:apt.guests});
   const head='<div class="h1"><b>'+apt.name+"</b> – "+t.ci+" "+dateStr(sIn)+" → "+t.co+" "+dateStr(sOut)+"</div>"+
-    (apt.hours?'<div class="h2">'+t.hours+": "+t.ci+" "+apt.hours.in+" – "+t.co+" "+apt.hours.out+"</div>":"")+
+    (apt.hours?'<div class="h2">'+t.hours+": "+t.ci+" "+span(apt.hours.in)+" – "+t.co+" "+span(apt.hours.out)+"</div>":"")+
     '<div class="h2">'+fmt(n===1?t.night:t.nights,{n})+" · "+g+" "+t.guestsW+"</div>";
   const msg=fmt(t.waMsg,{apt:apt.name,a:dateStr(sIn),b:dateStr(sOut),n,g,tot:money(tot)});
   const href="https://wa.me/"+D.whatsapp+"?text="+encodeURIComponent(msg);

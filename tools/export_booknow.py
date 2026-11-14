@@ -63,9 +63,14 @@ def read_planner(path):
         if not name or name not in APARTMENTS_PUBLIC:
             continue
         min_a = row[ix["Sogg. minimo Alta (notti)"]] or 1
-        # Orari: testo libero, es. "16:00 / 10:00" -> primo orario = check-in, secondo = check-out
-        times = re.findall(r"(\d{1,2})[:.](\d{2})", str(row[ix["Orari check-in / check-out"]] or ""))
-        hours = {"in": f"{int(times[0][0]):02d}:{times[0][1]}", "out": f"{int(times[1][0]):02d}:{times[1][1]}"} if len(times) >= 2 else None
+        # Orari: testo libero. 2 orari -> "16:00 / 10:00"; 4 orari -> fasce "15:30-19:30 / 08:30-10:30"
+        tt = [f"{int(h):02d}:{m}" for h, m in re.findall(r"(\d{1,2})[:.](\d{2})", str(row[ix["Orari check-in / check-out"]] or ""))]
+        if len(tt) >= 4:
+            hours = {"in": [tt[0], tt[1]], "out": [tt[2], tt[3]]}
+        elif len(tt) >= 2:
+            hours = {"in": [tt[0]], "out": [tt[1]]}
+        else:
+            hours = None
         apts[name] = {
             "name": name,
             "guests": int(row[ix["Posti letto"]] or 0),
