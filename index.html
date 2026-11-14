@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Maree di Carloforte · Disponibilità e prezzi</title>
+<meta name="description" content="Disponibilità e prezzi indicativi degli appartamenti Le Maree di Carloforte. Richiesta via WhatsApp.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#c9a867; --gold-d:#a8884a; --ink:#272a2f; --muted:#6b6f76; --line:#e7e2d8;
+    --bg:#faf8f4; --free:#ffffff; --busy:#ece9e4; --sel:#c9a867; --range:#f3ead8; --wa:#1f9d55;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Mulish,system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.45}
+  header{background:#fff;border-bottom:1px solid var(--line)}
+  .wrap{max-width:980px;margin:0 auto;padding:0 18px}
+  .top{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{font-family:"Open Sans",sans-serif;font-weight:600;color:var(--gold);text-decoration:none;font-size:20px;letter-spacing:.2px}
+  .lang{display:flex;gap:6px}
+  .lang button{border:1px solid var(--line);background:#fff;color:var(--muted);font:600 12px Mulish,system-ui,sans-serif;padding:6px 10px;border-radius:3px;cursor:pointer;letter-spacing:.06em}
+  .lang button[aria-pressed=true]{border-color:var(--gold);color:var(--ink)}
+  h1{font-weight:300;font-size:30px;margin:28px 0 4px}
+  .sub{color:var(--muted);margin:0 0 22px}
+  .step{font:700 12px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-d);margin:26px 0 10px}
+  .apts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .apt{border:1px solid var(--line);background:#fff;border-radius:4px;padding:14px 16px;text-align:left;cursor:pointer;font:inherit;color:inherit}
+  .apt b{display:block;font-size:17px;font-weight:600}
+  .apt span{color:var(--muted);font-size:13px}
+  .apt[aria-pressed=true]{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:3px;background:#fff}
+  .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .nav{border:1px solid var(--line);background:#fff;width:36px;height:36px;border-radius:3px;cursor:pointer;font-size:18px;color:var(--ink)}
+  .nav:disabled{opacity:.35;cursor:default}
+  .months{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .month h3{font-weight:600;font-size:15px;margin:0 0 8px;text-transform:capitalize;text-align:center}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  .dow{font-size:11px;color:var(--muted);text-align:center;padding:2px 0;text-transform:uppercase}
+  .day{aspect-ratio:1/1;border:1px solid var(--line);background:var(--free);border-radius:3px;font:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:0;color:var(--ink)}
+  .day .n{font-size:14px;font-weight:600}
+  .day .p{font-size:10px;color:var(--muted)}
+  .day.busy,.day.closed,.day.past{background:var(--busy);color:#a3a19c;cursor:default;border-color:var(--busy)}
+  .day.busy .n{text-decoration:line-through}
+  .day.busy .p,.day.closed .p,.day.past .p{visibility:hidden}
+  .day.out-ok{background:var(--busy);color:var(--ink);cursor:pointer;border-style:dashed;border-color:#cfc9bd}
+  .day.special{box-shadow:inset 0 -3px 0 #e8b56a}
+  .day.inrange{background:var(--range);border-color:var(--range)}
+  .day.start,.day.end{background:var(--sel);border-color:var(--sel);color:#fff}
+  .day.start .p,.day.end .p{color:#fff}
+  .blank{aspect-ratio:1/1}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:5px;border:1px solid var(--line)}
+  .summary{background:#fff;border:1px solid var(--line);border-radius:4px;padding:18px 20px;margin-top:22px}
+  .summary .msg{color:var(--muted)}
+  .summary .err{color:#b4462b}
+  .lines{width:100%;border-collapse:collapse;margin:8px 0 4px}
+  .lines td{padding:5px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .lines td:last-child{text-align:right;white-space:nowrap}
+  .lines tr.tot td{border-bottom:0;font-weight:700;font-size:17px;padding-top:10px}
+  .note{font-size:12px;color:var(--muted);margin:6px 0 14px}
+  .wa{display:inline-flex;gap:10px;align-items:center;background:var(--wa);color:#fff;text-decoration:none;font-weight:700;padding:12px 18px;border-radius:4px;border:0;font-size:15px}
+  .wa[aria-disabled=true]{background:#b9c7bf;pointer-events:none}
+  footer{color:var(--muted);font-size:12px;padding:28px 0 40px}
+  footer a{color:var(--gold-d)}
+  @media (max-width:720px){
+    .apts{grid-template-columns:1fr}
+    .months{grid-template-columns:1fr}
+    
+    h1{font-size:25px}
+  }
+</style>
+</head>
+<body>
+<header><div class="wrap top">
+  <a class="brand" href="https://www.lemareedicarloforte.it/" id="home">Le Maree di Carloforte</a>
+  <div class="lang" role="group" aria-label="Language">
+    <button data-l="it" aria-pressed="true">IT</button><button data-l="en" aria-pressed="false">EN</button>
+  </div>
+</div></header>
+
+<main class="wrap">
+  <h1 data-t="title"></h1>
+  <p class="sub" data-t="subtitle"></p>
+
+  <div class="step" data-t="s1"></div>
+  <div class="apts" id="apts"></div>
+
+  <div class="step" data-t="s2"></div>
+  <div class="row"><label for="guests" data-t="guests"></label><select id="guests"></select></div>
+
+  <div class="step" data-t="s3"></div>
+  <div class="cal-head">
+    <button class="nav" id="prev" aria-label="prev">‹</button>
+    <span class="msg" id="hint"></span>
+    <button class="nav" id="next" aria-label="next">›</button>
+  </div>
+  <div class="months" id="months"></div>
+  <div class="legend">
+    <span><i style="background:#fff"></i><span data-t="lgFree"></span></span>
+    <span><i style="background:var(--busy)"></i><span data-t="lgBusy"></span></span>
+    <span><i style="background:#fff;box-shadow:inset 0 -3px 0 #e8b56a"></i><span data-t="lgSpecial"></span></span>
+  </div>
+
+  <div class="summary" id="summary"></div>
+</main>
+
+<footer class="wrap"><span data-t="updated"></span> <span id="upd"></span> · <a href="https://www.lemareedicarloforte.it/" id="back" data-t="back"></a></footer>
+
+<script>
+(function(){
+const T={
+ it:{title:"Disponibilità e prezzi",subtitle:"Scegli l'appartamento e le date: vedi subito se è libero e il prezzo indicativo. La richiesta arriva via WhatsApp e ti rispondiamo noi per confermare.",
+  s1:"1 · Appartamento",s2:"2 · Ospiti",s3:"3 · Date",guests:"Numero di ospiti",
+  hintIn:"Seleziona il giorno di arrivo",hintOut:"Ora seleziona il giorno di partenza",
+  lgFree:"Disponibile (prezzo a notte)",lgBusy:"Non disponibile",lgSpecial:"Periodo speciale",
+  upTo:"fino a {n} ospiti",from:"da {p} €/notte",
+  pick:"Seleziona le date di arrivo e partenza nel calendario.",
+  nights:"{n} notti",night:"{n} notte",nightsAt:"{n} × {p} € (stagione {s})",cleaning:"Pulizie finali",total:"Totale indicativo",
+  seasons:{B:"bassa",M:"media",A:"alta"},
+  minErr:"Per queste date il soggiorno minimo è di {n} notti.",busyErr:"Alcune notti scelte non sono disponibili.",
+  guestsErr:"L'appartamento ospita al massimo {n} persone.",
+  note:"Prezzo indicativo calcolato sul listino, tassa di soggiorno esclusa. La prenotazione è valida solo dopo nostra conferma.",
+  wa:"Invia richiesta su WhatsApp",updated:"Disponibilità aggiornata al",back:"Torna al sito",
+  waMsg:"Buongiorno, vorrei richiedere la disponibilità di {apt} dal {a} al {b} ({n} notti) per {g} ospiti. Prezzo indicativo visto sul sito: {tot} €.",
+  noData:"Calendario momentaneamente non disponibile. Scrivici su WhatsApp al +39 348 7100832."},
+ en:{title:"Availability & prices",subtitle:"Choose the apartment and your dates: you'll see right away if it's free and the indicative price. Your request reaches us on WhatsApp and we'll get back to you to confirm.",
+  s1:"1 · Apartment",s2:"2 · Guests",s3:"3 · Dates",guests:"Number of guests",
+  hintIn:"Select your arrival day",hintOut:"Now select your departure day",
+  lgFree:"Available (price per night)",lgBusy:"Not available",lgSpecial:"Special period",
+  upTo:"up to {n} guests",from:"from €{p}/night",
+  pick:"Select your arrival and departure dates on the calendar.",
+  nights:"{n} nights",night:"{n} night",nightsAt:"{n} × €{p} ({s} season)",cleaning:"Final cleaning",total:"Indicative total",
+  seasons:{B:"low",M:"mid",A:"high"},
+  minErr:"For these dates the minimum stay is {n} nights.",busyErr:"Some of the selected nights are not available.",
+  guestsErr:"This apartment sleeps up to {n} guests.",
+  note:"Indicative price based on our rates, tourist tax not included. The booking is valid only after our confirmation.",
+  wa:"Send request on WhatsApp",updated:"Availability updated on",back:"Back to the website",
+  waMsg:"Hello, I'd like to check availability for {apt} from {a} to {b} ({n} nights) for {g} guests. Indicative price seen on the website: €{tot}.",
+  noData:"Calendar temporarily unavailable. Message us on WhatsApp at +39 348 7100832."}
+};
+const qs=new URLSearchParams(location.search);
+let L=qs.get("lang")||((navigator.language||"it").toLowerCase().startsWith("it")?"it":"en");
+if(!T[L])L="it";
+let D=null, apt=null, sIn=null, sOut=null, view=0;
+const $=id=>document.getElementById(id);
+const fmt=(s,o)=>s.replace(/\{(\w+)\}/g,(_,k)=>o[k]);
+const money=v=>Math.round(v).toLocaleString(L==="it"?"it-IT":"en-GB");
+const dayDate=i=>{const d=new Date(D.start+"T12:00:00");d.setDate(d.getDate()+i);return d;};
+const dateStr=i=>dayDate(i).toLocaleDateString(L==="it"?"it-IT":"en-GB",{day:"numeric",month:"short",year:"numeric"});
+
+function setLang(l){
+  L=l;document.documentElement.lang=l;
+  document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===l));
+  document.querySelectorAll("[data-t]").forEach(e=>{e.textContent=T[l][e.dataset.t]});
+  const site=l==="en"?"https://www.lemareedicarloforte.it/en-gb":"https://www.lemareedicarloforte.it/";
+  $("home").href=site;$("back").href=site;
+  if(D){$("upd").textContent=new Date(D.generated).toLocaleString(l==="it"?"it-IT":"en-GB",{dateStyle:"long",timeStyle:"short"});renderApts();renderCal();renderSummary();}
+  else $("summary").innerHTML='<span class="err">'+T[l].noData+'</span>';
+}
+function renderApts(){
+  $("apts").innerHTML="";
+  D.apartments.forEach(a=>{
+    const b=document.createElement("button");b.className="apt";b.setAttribute("aria-pressed",a===apt);
+    const minRate=Math.min(a.rates.B,a.rates.M,a.rates.A);
+    b.innerHTML="<b>"+a.name+"</b><span>"+fmt(T[L].upTo,{n:a.guests})+" · "+fmt(T[L].from,{p:minRate})+"</span>";
+    b.onclick=()=>{apt=a;sIn=sOut=null;fillGuests();renderApts();renderCal();renderSummary();};
+    $("apts").appendChild(b);
+  });
+}
+function fillGuests(){
+  const g=$("guests"),cur=+g.value||2;g.innerHTML="";
+  for(let i=1;i<=apt.guests;i++){const o=document.createElement("option");o.value=i;o.textContent=i;g.appendChild(o);}
+  g.value=Math.min(cur,apt.guests);
+}
+// night i is bookable?
+const free=i=>i>=0&&i<D.days&&apt.avail[i]==="F";
+function minFor(a,b){let m=1;for(let i=a;i<b;i++){m=Math.max(m,apt.min[D.seasons[i]]);}return m;}
+function allFree(a,b){for(let i=a;i<b;i++)if(!free(i))return false;return true;}
+function monthStarts(){ // indexes of the 1st of each month in window
+  const s=new Date(D.start+"T12:00:00"),out=[];
+  for(let k=0;k<14;k++){const m=new Date(s.getFullYear(),s.getMonth()+k,1,12);const i=Math.round((m-s)/864e5);if(i>=D.days)break;out.push(i);}
+  return out;
+}
+function renderCal(){
+  const ms=monthStarts(),box=$("months");box.innerHTML="";
+  view=Math.max(0,Math.min(view,ms.length-1));
+  const per=window.innerWidth<=720?1:2;
+  $("prev").disabled=view===0;$("next").disabled=view>=ms.length-per;
+  $("hint").textContent=sIn!==null&&sOut===null?T[L].hintOut:T[L].hintIn;
+  const dows=L==="it"?["lu","ma","me","gi","ve","sa","do"]:["mo","tu","we","th","fr","sa","su"];
+  for(let k=view;k<Math.min(view+per,ms.length);k++){
+    const first=dayDate(ms[k]),y=first.getFullYear(),m=first.getMonth();
+    const mdiv=document.createElement("div");mdiv.className="month";
+    mdiv.innerHTML="<h3>"+first.toLocaleDateString(L==="it"?"it-IT":"en-GB",{month:"long",year:"numeric"})+"</h3>";
+    const g=document.createElement("div");g.className="grid";
+    dows.forEach(d=>{const e=document.createElement("div");e.className="dow";e.textContent=d;g.appendChild(e);});
+    const lead=(new Date(y,m,1).getDay()+6)%7;for(let j=0;j<lead;j++){const e=document.createElement("div");e.className="blank";g.appendChild(e);}
+    const dim=new Date(y,m+1,0).getDate();
+    for(let dd=1;dd<=dim;dd++){
+      const el=document.createElement("button");el.className="day";
+      const real=new Date(y,m,dd,12);const idx=Math.round((real-new Date(D.start+"T12:00:00"))/864e5);
+      el.innerHTML='<span class="n">'+dd+'</span><span class="p">'+(idx>=0&&idx<D.days&&apt?"€"+apt.rates[D.seasons[idx]]:"")+'</span>';
+      if(idx<0){el.classList.add("past");el.disabled=true;}
+      else if(idx>=D.days){el.classList.add("closed");el.disabled=true;}
+      else{
+        if(D.events[idx])el.classList.add("special"),el.title=D.events[idx];
+        const st=apt.avail[idx];
+        const canOut=sIn!==null&&sOut===null&&idx>sIn&&allFree(sIn,idx);
+        if(st!=="F"&&!canOut){el.classList.add(st==="C"?"closed":"busy");el.disabled=true;}
+        else if(st!=="F"&&canOut){el.classList.add("out-ok");}
+        if(sIn!==null){
+          if(idx===sIn)el.classList.add("start");
+          else if(sOut!==null&&idx===sOut)el.classList.add("end");
+          else if(sOut!==null&&idx>sIn&&idx<sOut)el.classList.add("inrange");
+        }
+        el.onclick=()=>pick(idx);
+      }
+      g.appendChild(el);
+    }
+    mdiv.appendChild(g);box.appendChild(mdiv);
+  }
+}
+function pick(i){
+  if(sIn===null||sOut!==null||i<=sIn){ if(!free(i))return; sIn=i;sOut=null; }
+  else{ if(!allFree(sIn,i)){ if(free(i)){sIn=i;sOut=null;} } else sOut=i; }
+  renderCal();renderSummary();
+}
+function renderSummary(){
+  const t=T[L],box=$("summary"),g=+$("guests").value;
+  if(sIn===null||sOut===null){box.innerHTML='<span class="msg">'+t.pick+'</span>';return;}
+  const n=sOut-sIn,mn=minFor(sIn,sOut);
+  const by={};for(let i=sIn;i<sOut;i++){const s=D.seasons[i];by[s]=(by[s]||0)+1;}
+  let sum=0,rows="";
+  ["B","M","A"].forEach(s=>{if(by[s]){const v=by[s]*apt.rates[s];sum+=v;rows+="<tr><td>"+fmt(t.nightsAt,{n:by[s],p:apt.rates[s],s:t.seasons[s]})+"</td><td>"+money(v)+" €</td></tr>";}});
+  const tot=sum+apt.cleaning;
+  let err="";
+  if(!allFree(sIn,sOut))err=t.busyErr;else if(n<mn)err=fmt(t.minErr,{n:mn});else if(g>apt.guests)err=fmt(t.guestsErr,{n:apt.guests});
+  const head="<b>"+apt.name+"</b> · "+dateStr(sIn)+" → "+dateStr(sOut)+" · "+fmt(n===1?t.night:t.nights,{n})+" · "+g+" "+(L==="it"?"ospiti":"guests");
+  const msg=fmt(t.waMsg,{apt:apt.name,a:dateStr(sIn),b:dateStr(sOut),n,g,tot:money(tot)});
+  const href="https://wa.me/"+D.whatsapp+"?text="+encodeURIComponent(msg);
+  box.innerHTML=head+
+    '<table class="lines">'+rows+"<tr><td>"+t.cleaning+"</td><td>"+money(apt.cleaning)+" €</td></tr>"+
+    '<tr class="tot"><td>'+t.total+"</td><td>"+money(tot)+" €</td></tr></table>"+
+    (err?'<p class="err">'+err+"</p>":"")+'<p class="note">'+t.note+"</p>"+
+    '<a class="wa" target="_blank" rel="noopener" href="'+href+'" aria-disabled="'+(!!err)+'">'+
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg>'+
+    t.wa+"</a>";
+}
+$("guests").onchange=renderSummary;
+$("prev").onclick=()=>{view--;renderCal();};
+$("next").onclick=()=>{view++;renderCal();};
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>setLang(b.dataset.l));
+
+function start(data){
+  D=data;
+  const want=(qs.get("apt")||"").toLowerCase();
+  apt=D.apartments.find(a=>a.name.toLowerCase()===want)||D.apartments[0];
+  fillGuests();setLang(L);
+}
+if(window.BOOKNOW_DATA)start(window.BOOKNOW_DATA);
+else fetch("data/disponibilita.json?v="+Date.now()).then(r=>r.json()).then(start).catch(()=>setLang(L));
+})();
+</script>
+</body>
+</html>
