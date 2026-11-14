@@ -56,6 +56,8 @@
   .legend i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:5px;border:1px solid var(--line)}
   .summary{background:#fff;border:1px solid var(--line);border-radius:4px;padding:18px 20px;margin-top:22px}
   .summary .msg{color:var(--muted)}
+  .summary .h1{font-size:17px;margin-bottom:4px}
+  .summary .h2{color:var(--muted);font-size:14px}
   .summary .err{color:#b4462b}
   .lines{width:100%;border-collapse:collapse;margin:8px 0 4px}
   .lines td{padding:5px 0;border-bottom:1px solid var(--line);font-size:14px}
@@ -124,11 +126,12 @@ const T={
   lgFree:"Disponibile (prezzo a notte)",lgBusy:"Non disponibile",lgSpecial:"Periodo speciale",
   upTo:"fino a {n} ospiti",from:"da {p} €/notte",
   pick:"Seleziona le date di arrivo e partenza nel calendario.",
-  nights:"{n} notti",night:"{n} notte",nightsAt:"{n} × {p} € (stagione {s})",cleaning:"Pulizie finali",total:"Totale indicativo",
+  nights:"{n} notti",night:"{n} notte",nightsAt:"{n} × {p} € (stagione {s})",cleaning:"Pulizie finali",total:"Totale indicativo",tax:"Tassa di soggiorno ({g} × {n} notti × {p} €)",
+  ci:"Check-in",co:"Check-out",hours:"Orari",guestsW:"ospiti",
   seasons:{B:"bassa",M:"media",A:"alta"},
   minErr:"Per queste date il soggiorno minimo è di {n} notti.",busyErr:"Alcune notti scelte non sono disponibili.",
   guestsErr:"L'appartamento ospita al massimo {n} persone.",
-  note:"Prezzo indicativo calcolato sul listino, tassa di soggiorno esclusa. La prenotazione è valida solo dopo nostra conferma.",
+  note:"Prezzo indicativo calcolato sul listino, inclusa tassa di soggiorno. La prenotazione è valida solo dopo nostra conferma.",
   wa:"Invia richiesta su WhatsApp",updated:"Disponibilità aggiornata al",back:"Torna al sito",
   waMsg:"Buongiorno, vorrei richiedere la disponibilità di {apt} dal {a} al {b} ({n} notti) per {g} ospiti. Prezzo indicativo visto sul sito: {tot} €.",
   noData:"Calendario momentaneamente non disponibile. Scrivici su WhatsApp al +39 348 7100832."},
@@ -138,11 +141,12 @@ const T={
   lgFree:"Available (price per night)",lgBusy:"Not available",lgSpecial:"Special period",
   upTo:"up to {n} guests",from:"from €{p}/night",
   pick:"Select your arrival and departure dates on the calendar.",
-  nights:"{n} nights",night:"{n} night",nightsAt:"{n} × €{p} ({s} season)",cleaning:"Final cleaning",total:"Indicative total",
+  nights:"{n} nights",night:"{n} night",nightsAt:"{n} × €{p} ({s} season)",cleaning:"Final cleaning",total:"Indicative total",tax:"Tourist tax ({g} × {n} nights × €{p})",
+  ci:"Check-in",co:"Check-out",hours:"Times",guestsW:"guests",
   seasons:{B:"low",M:"mid",A:"high"},
   minErr:"For these dates the minimum stay is {n} nights.",busyErr:"Some of the selected nights are not available.",
   guestsErr:"This apartment sleeps up to {n} guests.",
-  note:"Indicative price based on our rates, tourist tax not included. The booking is valid only after our confirmation.",
+  note:"Indicative price based on our rates, tourist tax included. The booking is valid only after our confirmation.",
   wa:"Send request on WhatsApp",updated:"Availability updated on",back:"Back to the website",
   waMsg:"Hello, I'd like to check availability for {apt} from {a} to {b} ({n} nights) for {g} guests. Indicative price seen on the website: €{tot}.",
   noData:"Calendar temporarily unavailable. Message us on WhatsApp at +39 348 7100832."}
@@ -242,14 +246,19 @@ function renderSummary(){
   const by={};for(let i=sIn;i<sOut;i++){const s=D.seasons[i];by[s]=(by[s]||0)+1;}
   let sum=0,rows="";
   ["B","M","A"].forEach(s=>{if(by[s]){const v=by[s]*apt.rates[s];sum+=v;rows+="<tr><td>"+fmt(t.nightsAt,{n:by[s],p:apt.rates[s],s:t.seasons[s]})+"</td><td>"+money(v)+" €</td></tr>";}});
-  const tot=sum+apt.cleaning;
+  const tx=D.tax||{},rate=+tx.per_person_night||0;
+  const txN=tx.max_nights?Math.min(n,tx.max_nights):n, tax=rate*g*txN;
+  const tot=sum+apt.cleaning+tax;
   let err="";
   if(!allFree(sIn,sOut))err=t.busyErr;else if(n<mn)err=fmt(t.minErr,{n:mn});else if(g>apt.guests)err=fmt(t.guestsErr,{n:apt.guests});
-  const head="<b>"+apt.name+"</b> · "+dateStr(sIn)+" → "+dateStr(sOut)+" · "+fmt(n===1?t.night:t.nights,{n})+" · "+g+" "+(L==="it"?"ospiti":"guests");
+  const head='<div class="h1"><b>'+apt.name+"</b> – "+t.ci+" "+dateStr(sIn)+" → "+t.co+" "+dateStr(sOut)+"</div>"+
+    (apt.hours?'<div class="h2">'+t.hours+": "+t.ci+" "+apt.hours.in+" – "+t.co+" "+apt.hours.out+"</div>":"")+
+    '<div class="h2">'+fmt(n===1?t.night:t.nights,{n})+" · "+g+" "+t.guestsW+"</div>";
   const msg=fmt(t.waMsg,{apt:apt.name,a:dateStr(sIn),b:dateStr(sOut),n,g,tot:money(tot)});
   const href="https://wa.me/"+D.whatsapp+"?text="+encodeURIComponent(msg);
   box.innerHTML=head+
     '<table class="lines">'+rows+"<tr><td>"+t.cleaning+"</td><td>"+money(apt.cleaning)+" €</td></tr>"+
+    (tax>0?"<tr><td>"+fmt(t.tax,{g,n:txN,p:rate.toFixed(2).replace(".",L==="it"?",":".")})+"</td><td>"+money(tax)+" €</td></tr>":"")+
     '<tr class="tot"><td>'+t.total+"</td><td>"+money(tot)+" €</td></tr></table>"+
     (err?'<p class="err">'+err+"</p>":"")+'<p class="note">'+t.note+"</p>"+
     '<a class="wa" target="_blank" rel="noopener" href="'+href+'" aria-disabled="'+(!!err)+'">'+

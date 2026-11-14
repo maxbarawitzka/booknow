@@ -15,7 +15,7 @@ Regole (come nel planner):
   - RICHIESTE: Confermata = occupato, In attesa (opzione) = occupato; Rifiutata/Annullata ignorate
   - CHIUSURE: 'Tutti' o nome appartamento, notti incluse
 """
-import json, sys, datetime as dt, hashlib, argparse
+import json, re, sys, datetime as dt, hashlib, argparse
 from pathlib import Path
 import openpyxl
 
@@ -24,6 +24,9 @@ WINDOW_DAYS = 400          # ~13 mesi dal giorno di esportazione
 # Le CHIUSURE del planner vanno anche a Booking.com? Oggi no: il planner chiude tutto il 2027
 # "da aprire", e mandarlo a Booking bloccherebbe anche le vendite sul portale. Da decidere con Max.
 ICAL_INCLUDE_CLOSURES = False
+# Tassa di soggiorno aggiunta al prezzo indicativo (per persona per notte).
+# Carloforte: dal 2018 risulta sostituita dal contributo di sbarco (pagato col traghetto) -> 0 finché Max non conferma.
+TOURIST_TAX = {"per_person_night": 0.0, "max_nights": None, "exempt_under_age": None}
 RANK = {"Bassa": 1, "Media": 2, "Alta": 3}
 CODE = {"Bassa": "B", "Media": "M", "Alta": "A"}
 
@@ -52,7 +55,7 @@ def read_planner(path):
     ws = wb["APPARTAMENTI"]
     cols = ["Nome", "Posti letto", "Tariffa Bassa €/notte", "Tariffa Media €/notte",
             "Tariffa Alta €/notte", "Pulizie finali €", "Sogg. minimo Alta (notti)",
-            "Sogg. minimo Bassa (notti)", "Sogg. minimo Media (notti)"]
+            "Sogg. minimo Bassa (notti)", "Sogg. minimo Media (notti)", "Orari check-in / check-out"]
     ix = header_index(ws, 3, cols)
     apts = {}
     for row in ws.iter_rows(min_row=ix["_row"] + 1, values_only=True):
@@ -60,6 +63,9 @@ def read_planner(path):
         if not name or name not in APARTMENTS_PUBLIC:
             continue
         min_a = row[ix["Sogg. minimo Alta (notti)"]] or 1
+        # Orari: testo libero, es. "16:00 / 10:00" -> primo orario = check-in, secondo = check-out
+        times = re.findall(r"(\d{1,2})[:.](\d{2})", str(row[ix["Orari check-in / check-out"]] or ""))
+        hours = {"in": f"{int(times[0][0]):02d}:{times[0][1]}", "out": f"{int(times[1][0]):02d}:{times[1][1]}"} if len(times) >= 2 else None
         apts[name] = {
             "name": name,
             "guests": int(row[ix["Posti letto"]] or 0),
@@ -67,6 +73,7 @@ def read_planner(path):
                       "M": float(row[ix["Tariffa Media €/notte"]] or 0),
                       "A": float(row[ix["Tariffa Alta €/notte"]] or 0)},
             "cleaning": float(row[ix["Pulizie finali €"]] or 0),
+            "hours": hours,
             "min": {"B": int(row[ix["Sogg. minimo Bassa (notti)"]] or min_a),
                     "M": int(row[ix["Sogg. minimo Media (notti)"]] or min_a),
                     "A": int(min_a)},
@@ -166,10 +173,11 @@ def build(apts, base, specials, closures, stays, booking_busy, today):
         "days": len(days),
         "currency": "EUR",
         "whatsapp": "393487100832",
+        "tax": TOURIST_TAX,
         "seasons": "".join(seasons),
         "events": events,
         "apartments": [
-            {k: apts[n][k] for k in ("name", "guests", "rates", "cleaning", "min")}
+            {k: apts[n][k] for k in ("name", "guests", "rates", "cleaning", "min", "hours")}
             | {"avail": avail[n]} for n in APARTMENTS_PUBLIC
         ],
     }
