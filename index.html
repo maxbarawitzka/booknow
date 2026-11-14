@@ -25,7 +25,9 @@
   .sub{color:var(--muted);margin:0 0 22px}
   .step{font:700 12px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-d);margin:26px 0 10px}
   .apts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  .apt{border:1px solid var(--line);background:#fff;border-radius:4px;padding:14px 16px;text-align:left;cursor:pointer;font:inherit;color:inherit}
+  .apt{border:1px solid var(--line);background:#fff;border-radius:4px;padding:10px;text-align:left;cursor:pointer;font:inherit;color:inherit;display:flex;gap:12px;align-items:center}
+  .apt img{width:96px;height:72px;object-fit:cover;border-radius:3px;flex:none;background:var(--busy)}
+  .apt .txt{padding:4px 6px}
   .apt b{display:block;font-size:17px;font-weight:600}
   .apt span{color:var(--muted);font-size:13px}
   .apt[aria-pressed=true]{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
@@ -110,6 +112,11 @@
 
 <script>
 (function(){
+// Foto dal sito lemareedicarloforte.it (CDN Duda). Se una foto non si carica, la scheda resta senza immagine.
+const PHOTOS={
+  AltaMarea:"https://lirp.cdn-website.com/71137a87/dms3rep/multi/opt/HY4A0077-Ce-dricDasesson-f7f196b7-640w.jpg",
+  BassaMarea:"https://lirp.cdn-website.com/71137a87/dms3rep/multi/opt/HY4A9951-Ce-dricDasesson-f9422d2f-640w.jpg"
+};
 const T={
  it:{title:"Disponibilità e prezzi",subtitle:"Scegli l'appartamento e le date: vedi subito se è libero e il prezzo indicativo. La richiesta arriva via WhatsApp e ti rispondiamo noi per confermare.",
   s1:"1 · Appartamento",s2:"2 · Ospiti",s3:"3 · Date",guests:"Numero di ospiti",
@@ -164,7 +171,8 @@ function renderApts(){
   D.apartments.forEach(a=>{
     const b=document.createElement("button");b.className="apt";b.setAttribute("aria-pressed",a===apt);
     const minRate=Math.min(a.rates.B,a.rates.M,a.rates.A);
-    b.innerHTML="<b>"+a.name+"</b><span>"+fmt(T[L].upTo,{n:a.guests})+" · "+fmt(T[L].from,{p:minRate})+"</span>";
+    b.innerHTML=(PHOTOS[a.name]?'<img src="'+PHOTOS[a.name]+'" alt="'+a.name+'" loading="lazy" onerror="this.remove()">':"")+
+      '<div class="txt"><b>'+a.name+"</b><span>"+fmt(T[L].upTo,{n:a.guests})+" · "+fmt(T[L].from,{p:minRate})+"</span></div>";
     b.onclick=()=>{apt=a;sIn=sOut=null;fillGuests();renderApts();renderCal();renderSummary();};
     $("apts").appendChild(b);
   });
