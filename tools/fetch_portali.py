@@ -48,6 +48,8 @@ def leggi_data(valore):
 
 
 # Parole che nei portali indicano una chiusura, non una prenotazione venduta.
+# Attenzione: oggi entrambi i portali usano queste diciture anche per le notti vendute,
+# quindi la classificazione non e' affidabile e export_booknow.py non la usa.
 PAROLE_CHIUSURA = ("closed", "not available", "unavailable", "blocked", "non disponibile")
 
 
@@ -113,10 +115,12 @@ def main():
     risultato = {
         "generato": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
         "orizzonte_giorni": ORIZZONTE,
-        "nota": ("Solo date piu' la classificazione chiuse/prenotate. Nessun dato degli ospiti: "
-                 "il testo di SUMMARY e DESCRIPTION non viene mai scritto. "
-                 "'prenotate' = notti vendute dal portale; 'chiuse' = notti che il portale "
-                 "segnala come non disponibili, che non impediscono una vendita diretta."),
+        "nota": ("Solo date. Nessun dato degli ospiti: il testo di SUMMARY e DESCRIPTION "
+                 "non viene mai scritto. La divisione 'prenotate'/'chiuse' viene dall'etichetta "
+                 "dell'evento e oggi non e' affidabile: Booking e Airbnb usano la stessa dicitura "
+                 "per notti vendute e notti chiuse dall'host. Per questo export_booknow.py tratta "
+                 "come occupate ENTRAMBE: ogni notte segnalata da un portale chiude anche la "
+                 "vendita diretta (decisione del 15/11/2026)."),
         "appartamenti": {},
     }
     errori_totali = 0

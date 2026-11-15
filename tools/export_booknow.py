@@ -6,7 +6,7 @@ Legge il booking planner (.xlsx) ed esporta per il calendario pubblico:
   ical/<appartamento>.ics   prenotazioni dirette (+ chiusure se ICAL_INCLUDE_CLOSURES), per Booking.com
 
 Uso:
-  python3 export_booknow.py PLANNER.xlsx OUT_DIR [--booking-json booking_busy.json]
+  python3 export_booknow.py PLANNER.xlsx OUT_DIR [--booking-json data/portali_occupati.json]
 
 Regole (come nel planner):
   - stagione di ogni notte: periodo speciale se presente, altrimenti stagione base (PARAMETRI)
