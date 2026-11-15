@@ -5,10 +5,11 @@ Gira su GitHub Actions, che ha accesso libero alla rete (il computer e la
 sessione Claude no). I link dei portali arrivano dal segreto ICAL_SOURCES e
 non compaiono mai nel repository.
 
-IMPORTANTE - privacy: dagli eventi si prendono SOLO le date (DTSTART/DTEND).
-SUMMARY, DESCRIPTION, UID e qualsiasi altro campo vengono scartati: l'iCal di
-Airbnb puo' contenere il link alla prenotazione e le ultime cifre del telefono
-dell'ospite, e questo repository e' pubblico.
+IMPORTANTE - privacy: dagli eventi si prendono SOLO le date (DTSTART/DTEND) e
+una classificazione in due valori ricavata dal SUMMARY (chiusura / prenotazione).
+Il testo di SUMMARY, DESCRIPTION, UID e ogni altro campo non viene mai scritto:
+l'iCal di Airbnb puo' contenere il link alla prenotazione e le ultime cifre del
+telefono dell'ospite, e questo repository e' pubblico.
 
 Uso: python3 tools/fetch_portali.py            (legge $ICAL_SOURCES)
      python3 tools/fetch_portali.py file.json  (legge un file locale)
@@ -46,29 +47,47 @@ def leggi_data(valore):
     return date(int(v[:4]), int(v[4:6]), int(v[6:8]))
 
 
+# Parole che nei portali indicano una chiusura, non una prenotazione venduta.
+PAROLE_CHIUSURA = ("closed", "not available", "unavailable", "blocked", "non disponibile")
+
+
+def classifica(summary):
+    s = (summary or "").lower()
+    return "chiuse" if any(p in s for p in PAROLE_CHIUSURA) else "prenotate"
+
+
 def date_occupate(ics):
-    """Date occupate da un iCal. DTEND e' escluso (giorno di partenza libero)."""
-    giorni, dentro, inizio, fine = set(), False, None, None
+    """{'prenotate': set(date), 'chiuse': set(date)} da un iCal.
+
+    DTEND e' escluso: il giorno di partenza resta libero. Del SUMMARY si tiene
+    solo la classificazione, mai il testo.
+    """
+    out = {"prenotate": set(), "chiuse": set()}
+    dentro, inizio, fine, summary = False, None, None, ""
     for riga in unfold(ics):
         nome = riga.split(":", 1)[0].split(";", 1)[0].upper()
         if riga.upper().startswith("BEGIN:VEVENT"):
-            dentro, inizio, fine = True, None, None
+            dentro, inizio, fine, summary = True, None, None, ""
         elif riga.upper().startswith("END:VEVENT"):
-            if inizio and fine and fine > inizio:
-                g = inizio
-                while g < fine:
-                    giorni.add(g)
-                    g += timedelta(days=1)
-            elif inizio and fine == inizio:
-                giorni.add(inizio)
-            dentro, inizio, fine = False, None, None
+            if inizio:
+                dove = out[classifica(summary)]
+                if fine and fine > inizio:
+                    g = inizio
+                    while g < fine:
+                        dove.add(g)
+                        g += timedelta(days=1)
+                else:
+                    dove.add(inizio)
+            dentro, inizio, fine, summary = False, None, None, ""
         elif dentro and ":" in riga:
             valore = riga.split(":", 1)[1]
             if nome == "DTSTART":
                 inizio = leggi_data(valore)
             elif nome == "DTEND":
                 fine = leggi_data(valore)
-    return giorni
+            elif nome == "SUMMARY":
+                summary = valore
+    return out
 
 
 def scarica(url):
@@ -94,29 +113,38 @@ def main():
     risultato = {
         "generato": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
         "orizzonte_giorni": ORIZZONTE,
-        "nota": "Solo date. Nessun dato degli ospiti: SUMMARY e DESCRIPTION degli eventi vengono scartati.",
+        "nota": ("Solo date piu' la classificazione chiuse/prenotate. Nessun dato degli ospiti: "
+                 "il testo di SUMMARY e DESCRIPTION non viene mai scritto. "
+                 "'prenotate' = notti vendute dal portale; 'chiuse' = notti che il portale "
+                 "segnala come non disponibili, che non impediscono una vendita diretta."),
         "appartamenti": {},
     }
     errori_totali = 0
 
     for nome, portali in appartamenti.items():
-        voce = {"occupate": [], "per_portale": {}, "errori": []}
-        tutte = set()
+        voce = {"prenotate": [], "chiuse": [], "per_portale": {}, "errori": []}
+        unione = {"prenotate": set(), "chiuse": set()}
         for portale, url in sorted(portali.items()):
             if not url or not str(url).startswith("http"):
                 voce["per_portale"][portale] = None
                 continue
             try:
-                giorni = {g for g in date_occupate(scarica(url)) if oggi <= g <= limite}
-                tutte |= giorni
-                voce["per_portale"][portale] = len(giorni)
-                print(f"{nome}/{portale}: {len(giorni)} notti occupate")
+                g = date_occupate(scarica(url))
+                dettaglio = {}
+                for tipo in ("prenotate", "chiuse"):
+                    giorni = {d for d in g[tipo] if oggi <= d <= limite}
+                    unione[tipo] |= giorni
+                    dettaglio[tipo] = sorted(d.isoformat() for d in giorni)
+                voce["per_portale"][portale] = dettaglio
+                print(f"{nome}/{portale}: {len(dettaglio['prenotate'])} notti prenotate, "
+                      f"{len(dettaglio['chiuse'])} chiuse")
             except (urllib.error.URLError, urllib.error.HTTPError, OSError, ValueError) as e:
                 errori_totali += 1
                 voce["per_portale"][portale] = "errore"
                 voce["errori"].append(f"{portale}: {type(e).__name__}: {e}")
                 print(f"{nome}/{portale}: ERRORE {e}", file=sys.stderr)
-        voce["occupate"] = sorted(g.isoformat() for g in tutte)
+        for tipo in ("prenotate", "chiuse"):
+            voce[tipo] = sorted(d.isoformat() for d in unione[tipo])
         risultato["appartamenti"][nome] = voce
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
