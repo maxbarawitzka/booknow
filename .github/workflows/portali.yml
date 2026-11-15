@@ -28,7 +28,8 @@ jobs:
 
       - name: Leggi i calendari dei portali
         env:
-          ICAL_SOURCES: ${{ secrets.ICAL_SOURCES }}
+          # Accetta il segreto con entrambi i nomi: quello vuoto non aggiunge nulla.
+          ICAL_SOURCES: ${{ secrets.ICAL_SOURCES }}${{ secrets.ICAL_SOURCE }}
         run: python3 tools/fetch_portali.py
 
       - name: Pubblica le date occupate
