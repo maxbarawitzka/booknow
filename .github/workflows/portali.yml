@@ -1,0 +1,44 @@
+name: Calendari portali
+
+# Legge i calendari iCal di Booking.com e Airbnb e aggiorna
+# data/portali_occupati.json con le sole date occupate.
+# I link stanno nel segreto ICAL_SOURCES, mai nel repository.
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"   # ogni 3 ore
+  workflow_dispatch:          # esecuzione manuale dalla scheda Actions
+
+permissions:
+  contents: write
+
+concurrency:
+  group: portali
+  cancel-in-progress: false
+
+jobs:
+  aggiorna:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Leggi i calendari dei portali
+        env:
+          ICAL_SOURCES: ${{ secrets.ICAL_SOURCES }}
+        run: python3 tools/fetch_portali.py
+
+      - name: Pubblica le date occupate
+        run: |
+          if [ -n "$(git status --porcelain data/portali_occupati.json)" ]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/portali_occupati.json
+            git commit -m "Date occupate dai portali: $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git push
+          else
+            echo "Nessuna variazione."
+          fi
