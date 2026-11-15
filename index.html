@@ -198,6 +198,7 @@ const dateStr=i=>dayDate(i).toLocaleDateString(L==="it"?"it-IT":"en-GB",{day:"nu
 
 function setLang(l){
   L=l;document.documentElement.lang=l;
+  document.title="Le Maree di Carloforte · "+T[l].title;
   document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===l));
   document.querySelectorAll("[data-t]").forEach(e=>{e.textContent=T[l][e.dataset.t]});
   [["fname","phName"],["lname","phSurname"],["phone","phPhone"]].forEach(([i,k])=>{$(i).placeholder=T[l][k]});
