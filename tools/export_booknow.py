@@ -147,7 +147,7 @@ def build(apts, base, specials, closures, stays, booking_busy, today):
             events[str(i)] = ev
 
     # stato per notte: F libero, O occupato (diretto/opzione), X occupato da portale, C chiuso
-    avail, ical_blocks = {}, {}
+    avail, ical_blocks, da_verificare = {}, {}, {}
     for name in apts:
         st = ["F"] * len(days)
         direct = []
@@ -165,10 +165,15 @@ def build(apts, base, specials, closures, stays, booking_busy, today):
                 if a <= day < b and st[i] != "C":
                     st[i] = "O"
             direct.append((a, b, "Prenotato"))
-        for a, b in booking_busy.get(name, []):
-            for i, day in enumerate(days):
-                if a <= day < b and st[i] == "F":
-                    st[i] = "X"
+        # Portali: atteggiamento prudente. L'iCal non distingue una notte venduta
+        # da una che l'host ha chiuso sul portale, quindi ogni data segnalata
+        # chiude anche il canale diretto. Le notti cosi' bloccate (stato X) sono
+        # proprio quelle da verificare in extranet: le riportiamo a parte.
+        occupate_portali = booking_busy.get(name) or set()
+        for i, day in enumerate(days):
+            if day in occupate_portali and st[i] == "F":
+                st[i] = "X"
+                da_verificare.setdefault(name, []).append(day)
         avail[name] = "".join(st)
         ical_blocks[name] = direct     # solo diretto + chiusure (mai rimandare a Booking le sue date)
 
@@ -186,7 +191,7 @@ def build(apts, base, specials, closures, stays, booking_busy, today):
             | {"avail": avail[n]} for n in APARTMENTS_PUBLIC
         ],
     }
-    return data, ical_blocks
+    return data, ical_blocks, da_verificare
 
 
 def write_ics(path, name, blocks):
@@ -202,22 +207,45 @@ def write_ics(path, name, blocks):
     path.write_text("\r\n".join(lines) + "\r\n", encoding="utf-8")
 
 
+def carica_portali(path):
+    """{appartamento: set(date occupate)} dal file prodotto da fetch_portali.py.
+
+    Atteggiamento prudente: si prendono sia le notti 'prenotate' sia le 'chiuse',
+    perche' l'iCal dei portali non permette di distinguerle in modo affidabile.
+    Accetta anche il vecchio formato {apt: [[arrivo, partenza], ...]}.
+    """
+    if not path or not Path(path).exists():
+        return {}
+    raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    fuori = {}
+    sorgente = raw.get("appartamenti", raw)
+    for nome, voce in sorgente.items():
+        giorni = set()
+        if isinstance(voce, dict):
+            for tipo in ("prenotate", "chiuse"):
+                giorni |= {dt.date.fromisoformat(x) for x in voce.get(tipo, [])}
+        elif isinstance(voce, list):
+            for a, b in voce:
+                a, b = dt.date.fromisoformat(a), dt.date.fromisoformat(b)
+                while a < b:
+                    giorni.add(a)
+                    a += dt.timedelta(1)
+        fuori[nome] = giorni
+    return fuori
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("planner")
     ap.add_argument("outdir")
-    ap.add_argument("--booking-json", help="date occupate dai portali {apt: [[arrivo, partenza], ...]}")
+    ap.add_argument("--booking-json", help="date occupate dai portali: data/portali_occupati.json")
     ap.add_argument("--today", help="AAAA-MM-GG (test)")
     args = ap.parse_args()
 
     today = dt.date.fromisoformat(args.today) if args.today else dt.date.today()
-    booking = {}
-    if args.booking_json and Path(args.booking_json).exists():
-        raw = json.loads(Path(args.booking_json).read_text())
-        booking = {k: [(dt.date.fromisoformat(a), dt.date.fromisoformat(b)) for a, b in v]
-                   for k, v in raw.items() if isinstance(v, list)}
+    booking = carica_portali(args.booking_json)
 
-    data, blocks = build(*read_planner(args.planner), booking, today)
+    data, blocks, da_verificare = build(*read_planner(args.planner), booking, today)
     out = Path(args.outdir)
     (out / "data").mkdir(parents=True, exist_ok=True)
     (out / "ical").mkdir(parents=True, exist_ok=True)
@@ -228,7 +256,23 @@ def main():
     for a in data["apartments"]:
         c = {k: a["avail"].count(k) for k in "FOXC"}
         print(f"{a['name']:12s} liberi {c['F']:3d}  occupati {c['O']:3d}  portali {c['X']:3d}  chiusi {c['C']:3d}")
-    print("OK ->", out)
+
+    if da_verificare:
+        print("\nDA VERIFICARE IN EXTRANET - il planner e' aperto ma il portale risulta occupato:")
+        for nome in sorted(da_verificare):
+            giorni, blocchi = sorted(da_verificare[nome]), []
+            for g in giorni:
+                if blocchi and (g - blocchi[-1][1]).days == 1:
+                    blocchi[-1][1] = g
+                else:
+                    blocchi.append([g, g])
+            for a, b in blocchi:
+                n = (b - a).days + 1
+                print(f"  {nome:12s} {a} -> {b}  ({n} nott{'e' if n == 1 else 'i'})")
+        print("  Se una di queste e' solo una chiusura sul portale, riaprila in extranet:")
+        print("  finche' resta cosi', e' chiusa anche alla vendita diretta.")
+
+    print("\nOK ->", out)
 
 
 if __name__ == "__main__":
