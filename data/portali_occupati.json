@@ -2,7 +2,7 @@
  "appartamenti": {
   "AltaMarea": {
    "chiuse": [
-    "2026-11-15",
+    "2026-11-16",
     "2027-01-11",
     "2027-01-12",
     "2027-01-13",
@@ -346,13 +346,14 @@
     "2027-12-17",
     "2027-12-18",
     "2027-12-19",
-    "2027-12-20"
+    "2027-12-20",
+    "2027-12-21"
    ],
    "errori": [],
    "per_portale": {
     "airbnb": {
      "chiuse": [
-      "2026-11-15"
+      "2026-11-16"
      ],
      "prenotate": []
     },
@@ -701,7 +702,8 @@
       "2027-12-17",
       "2027-12-18",
       "2027-12-19",
-      "2027-12-20"
+      "2027-12-20",
+      "2027-12-21"
      ],
      "prenotate": []
     }
@@ -710,7 +712,7 @@
   },
   "BassaMarea": {
    "chiuse": [
-    "2026-11-15",
+    "2026-11-16",
     "2027-01-08",
     "2027-01-09",
     "2027-01-10",
@@ -1057,19 +1059,20 @@
     "2027-12-17",
     "2027-12-18",
     "2027-12-19",
-    "2027-12-20"
+    "2027-12-20",
+    "2027-12-21"
    ],
    "errori": [],
    "per_portale": {
     "airbnb": {
      "chiuse": [
-      "2026-11-15",
-      "2027-11-10",
+      "2026-11-16",
       "2027-11-11",
       "2027-11-12",
       "2027-11-13",
       "2027-11-14",
-      "2027-11-15"
+      "2027-11-15",
+      "2027-11-16"
      ],
      "prenotate": []
     },
@@ -1381,7 +1384,7 @@
       "2027-11-07",
       "2027-11-08",
       "2027-11-09",
-      "2027-11-16",
+      "2027-11-10",
       "2027-11-17",
       "2027-11-18",
       "2027-11-19",
@@ -1415,7 +1418,8 @@
       "2027-12-17",
       "2027-12-18",
       "2027-12-19",
-      "2027-12-20"
+      "2027-12-20",
+      "2027-12-21"
      ],
      "prenotate": []
     }
@@ -1435,7 +1439,7 @@
    "prenotate": []
   }
  },
- "generato": "2026-11-15T18:52:35+00:00",
+ "generato": "2026-11-16T01:03:45+00:00",
  "nota": "Solo date. Nessun dato degli ospiti: il testo di SUMMARY e DESCRIPTION non viene mai scritto. La divisione 'prenotate'/'chiuse' viene dall'etichetta dell'evento e oggi non e' affidabile: Booking e Airbnb usano la stessa dicitura per notti vendute e notti chiuse dall'host. Per questo export_booknow.py tratta come occupate ENTRAMBE: ogni notte segnalata da un portale chiude anche la vendita diretta (decisione del 15/11/2026).",
  "orizzonte_giorni": 400
 }
