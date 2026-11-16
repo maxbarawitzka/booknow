@@ -21,25 +21,13 @@
   },
   "BassaMarea": {
    "chiuse": [
-    "2026-11-16",
-    "2027-11-11",
-    "2027-11-12",
-    "2027-11-13",
-    "2027-11-14",
-    "2027-11-15",
-    "2027-11-16"
+    "2026-11-16"
    ],
    "errori": [],
    "per_portale": {
     "airbnb": {
      "chiuse": [
-      "2026-11-16",
-      "2027-11-11",
-      "2027-11-12",
-      "2027-11-13",
-      "2027-11-14",
-      "2027-11-15",
-      "2027-11-16"
+      "2026-11-16"
      ],
      "prenotate": []
     },
@@ -63,7 +51,7 @@
    "prenotate": []
   }
  },
- "generato": "2026-11-16T17:14:12+00:00",
+ "generato": "2026-11-16T17:20:24+00:00",
  "nota": "Solo date. Nessun dato degli ospiti: il testo di SUMMARY e DESCRIPTION non viene mai scritto. La divisione 'prenotate'/'chiuse' viene dall'etichetta dell'evento e oggi non e' affidabile: Booking e Airbnb usano la stessa dicitura per notti vendute e notti chiuse dall'host. Per questo export_booknow.py tratta come occupate ENTRAMBE: ogni notte segnalata da un portale chiude anche la vendita diretta (decisione del 15/11/2026).",
  "orizzonte_giorni": 400
 }
