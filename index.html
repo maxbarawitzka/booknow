@@ -157,6 +157,7 @@ const T={
   s1:"1 · Appartamento",s2:"2 · I tuoi dati",s3:"3 · Ospiti",s4:"4 · Date",guests:"Numero di ospiti",phName:"Nome*",phSurname:"Cognome*",phPhone:"Telefono*",contactErr:"* Inserisci nome, cognome e telefono.",
   hintIn:"Seleziona il giorno di arrivo",hintOut:"Ora seleziona il giorno di partenza",
   lgFree:"Disponibile (prezzo a notte)",lgBusy:"Non disponibile",lgSpecial:"Periodo speciale",
+  outOnly:"Occupato: selezionabile solo come giorno di partenza",
   upTo:"fino a {n} ospiti",from:"da {p} €/notte",
   pick:"Seleziona le date di arrivo e partenza nel calendario.",
   nights:"{n} notti",night:"{n} notte",nightsAt:"{n} × {p} € (stagione {s})",cleaning:"Pulizie finali",total:"Totale indicativo",tax:"Tassa di soggiorno ({g} × {n} notti × {p} €)",
@@ -173,6 +174,7 @@ const T={
   s1:"1 · Apartment",s2:"2 · Your details",s3:"3 · Guests",s4:"4 · Dates",guests:"Number of guests",phName:"First name*",phSurname:"Last name*",phPhone:"Phone*",contactErr:"* Please enter your first name, last name and phone number.",
   hintIn:"Select your arrival day",hintOut:"Now select your departure day",
   lgFree:"Available (price per night)",lgBusy:"Not available",lgSpecial:"Special period",
+  outOnly:"Booked: can only be chosen as your check-out day",
   upTo:"up to {n} guests",from:"from €{p}/night",
   pick:"Select your arrival and departure dates on the calendar.",
   nights:"{n} nights",night:"{n} night",nightsAt:"{n} × €{p} ({s} season)",cleaning:"Final cleaning",total:"Indicative total",tax:"Tourist tax ({g} × {n} nights × €{p})",
@@ -258,7 +260,7 @@ function renderCal(){
         const st=apt.avail[idx];
         const canOut=sIn!==null&&sOut===null&&idx>sIn&&allFree(sIn,idx);
         if(st!=="F"&&!canOut){el.classList.add(st==="C"?"closed":"busy");el.disabled=true;}
-        else if(st!=="F"&&canOut){el.classList.add("out-ok");}
+        else if(st!=="F"&&canOut){el.classList.add("out-ok");el.title=(el.title?el.title+" · ":"")+T[L].outOnly;}
         if(sIn!==null){
           if(idx===sIn)el.classList.add("start");
           else if(sOut!==null&&idx===sOut)el.classList.add("end");
