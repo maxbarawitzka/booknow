@@ -51,7 +51,7 @@
    "prenotate": []
   }
  },
- "generato": "2026-11-22T11:27:46+00:00",
+ "generato": "2026-11-22T19:42:48+00:00",
  "nota": "Solo date. Nessun dato degli ospiti: il testo di SUMMARY e DESCRIPTION non viene mai scritto. La divisione 'prenotate'/'chiuse' viene dall'etichetta dell'evento e oggi non e' affidabile: Booking e Airbnb usano la stessa dicitura per notti vendute e notti chiuse dall'host. Per questo export_booknow.py tratta come occupate ENTRAMBE: ogni notte segnalata da un portale chiude anche la vendita diretta (decisione del 15/11/2026).",
  "orizzonte_giorni": 400
 }
