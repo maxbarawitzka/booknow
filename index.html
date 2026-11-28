@@ -139,7 +139,7 @@
   <div class="summary" id="summary"></div>
 </main>
 
-<footer class="wrap"><span data-t="updated"></span> <span id="upd"></span> · <a href="https://www.lemareedicarloforte.it/" id="back" data-t="back"></a></footer>
+<footer class="wrap"><span data-t="updated"></span> <span id="upd"></span> · <a href="https://www.lemareedicarloforte.it/" id="back" data-t="back"></a> · <a href="privacy/" id="privacy">Privacy</a></footer>
 
 <script>
 (function(){
@@ -205,7 +205,7 @@ function setLang(l){
   document.querySelectorAll("[data-t]").forEach(e=>{e.textContent=T[l][e.dataset.t]});
   [["fname","phName"],["lname","phSurname"],["phone","phPhone"]].forEach(([i,k])=>{$(i).placeholder=T[l][k]});
   const site=l==="en"?"https://www.lemareedicarloforte.it/en-gb":"https://www.lemareedicarloforte.it/";
-  $("home").href=site;$("back").href=site;
+  $("home").href=site;$("back").href=site;$("privacy").href="privacy/#"+l;
   if(D){$("upd").textContent=new Date(D.generated).toLocaleString(l==="it"?"it-IT":"en-GB",{dateStyle:"long",timeStyle:"short"});renderApts();renderCal();renderSummary();}
   else $("summary").innerHTML='<span class="err">'+T[l].noData+'</span>';
 }
